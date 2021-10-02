@@ -2,6 +2,7 @@ package com.example.jfrsocketmicrometersample;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,10 +15,13 @@ import jdk.jfr.consumer.RecordingStream;
 
 @Configuration(proxyBeanMethods = false)
 public class SocketObservingConfiguration {
-    private static final Logger logger = LoggerFactory.getLogger(SampleController.class);
+    private static final Logger logger = LoggerFactory.getLogger(SampleScheduler.class);
 
     @Bean
     public MeterBinder record() {
+        var tmpdir = System.getProperty("java.io.tmpdir");
+        var tmpdirPattern = Pattern.compile(tmpdir + ".*");
+
         return (registry) -> {
             var rs = new RecordingStream();
 
@@ -56,6 +60,7 @@ public class SocketObservingConfiguration {
                 if (path == null) {
                     path = "N/A";
                 }
+                path = tmpdirPattern.matcher(path).replaceFirst(tmpdir + ".*");
 
                 logger.info("Got {} path={} bytesRead={}", event.getEventType().getName(),
                             path, bytesRead);
@@ -69,6 +74,7 @@ public class SocketObservingConfiguration {
                 if (path == null) {
                     path = "N/A";
                 }
+                path = tmpdirPattern.matcher(path).replaceFirst(tmpdir + ".*");
 
                 logger.info("Got {} path={} bytesWritten={}", event.getEventType().getName(),
                             path,
